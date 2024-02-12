@@ -1,5 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
+import BN from "bn.js";
 import { UskzDeviant } from "../target/types/uskz_deviant";
 
 describe("uskz-deviant", () => {
@@ -26,7 +27,9 @@ describe("uskz-deviant", () => {
       mint: mintKeypair.publicKey,
       owner: wallet.publicKey,
     });
-    console.log(`New token: ${mintKeypair.publicKey}`);
+    console.log(`Token address: ${tokenAddress}`);
+    console.log(`Owner: ${wallet.publicKey}`);
+    console.log(`Public key: ${mintKeypair.publicKey}`);
 
     // Derive the metadata and master edition addresses
 
@@ -54,14 +57,15 @@ describe("uskz-deviant", () => {
     // Transact with the "mint" function in our on-chain program
 
     await program.methods
-      .createSingleNft(testNftName, testNftSymbol, testNftUri)
+      .createSingleNft(new BN(1), testNftName, testNftSymbol, testNftUri)
       .accounts({
-        masterEdition: masterEditionAddress,
-        metadata: metadataAddress,
+        authority: mintKeypair.publicKey,
+        payer: wallet.publicKey,
         mint: mintKeypair.publicKey,
         tokenAccount: tokenAddress,
-        mintAuthority: wallet.publicKey,
-        tokenMetadataProgram: TOKEN_METADATA_PROGRAM_ID,
+        metadataProgram: TOKEN_METADATA_PROGRAM_ID,
+        masterEditionAccount: masterEditionAddress,
+        nftMetadata: metadataAddress,
       })
       .signers([mintKeypair])
       .rpc();

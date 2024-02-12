@@ -4,14 +4,14 @@
 seeds = false
 skip-lint = false
 
-[programs.localnet]
-uskz_deviant = "5nvBgkfSEAYhZSfxrBHT89RxAZd1vK3e8W3NMv8rU88M"
+[programs.devnet]
+uskz_deviant = "2Uc5EJ6H95mMQzb9QQrCbtpW4NGyX4zPqarkPJsZtX2u"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
