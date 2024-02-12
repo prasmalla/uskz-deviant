@@ -7,7 +7,7 @@ use anchor_spl::metadata::{
 use anchor_spl::token::{mint_to, Mint, MintTo, Token, TokenAccount};
 use mpl_token_metadata::types::{Collection, Creator, DataV2};
 
-declare_id!("2Uc5EJ6H95mMQzb9QQrCbtpW4NGyX4zPqarkPJsZtX2u");
+declare_id!("EMjfHiSdDdUTxRJMUxnkS9mAVqWaKw8MktGLNKJ94Lnj");
 
 #[program]
 pub mod uskz_deviant {

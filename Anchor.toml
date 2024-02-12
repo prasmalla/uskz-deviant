@@ -4,15 +4,21 @@
 seeds = false
 skip-lint = false
 
-[programs.devnet]
-uskz_deviant = "2Uc5EJ6H95mMQzb9QQrCbtpW4NGyX4zPqarkPJsZtX2u"
+[programs.localnet]
+uskz_deviant = "EMjfHiSdDdUTxRJMUxnkS9mAVqWaKw8MktGLNKJ94Lnj"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "devnet"
+cluster = "localNet"
 wallet = "~/.config/solana/id.json"
+
+[[test.validator.clone]]
+address = "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
+
+[test.validator]
+url = "https://api.mainnet-beta.solana.com"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
