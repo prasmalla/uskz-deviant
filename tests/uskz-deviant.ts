@@ -1,5 +1,15 @@
+import fs from "fs";
+import os from "os";
+import path from "path";
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
+import {
+  irysStorage,
+  Metaplex,
+  keypairIdentity,
+  toMetaplexFile,
+} from "@metaplex-foundation/js";
+import { Connection, Keypair } from "@solana/web3.js";
 import { UskzDeviant } from "../target/types/uskz_deviant";
 
 describe("uskz-deviant", () => {
@@ -22,12 +32,47 @@ describe("uskz-deviant", () => {
     program.programId
   );
 
+  // setup metaplex
+  const metaplex = Metaplex.make(
+    new Connection("https://api.devnet.solana.com", "confirmed")
+  )
+    .use(
+      keypairIdentity(
+        Keypair.fromSecretKey(
+          Buffer.from(
+            JSON.parse(
+              fs.readFileSync(os.homedir() + "/.config/solana/id.json", "utf-8")
+            )
+          )
+        )
+      )
+    )
+    .use(
+      irysStorage({
+        address: "https://devnet.bundlr.network",
+      })
+    );
+
   const name = "uskz deviant";
   const symbol = "USKZ";
-  const uri =
-    "https://gist.githubusercontent.com/prasmalla/447c6cf49f50bd25616d20b09f9db446/raw/c142d0af6f239bbceedec47ccc7ccb46162b1e1b/marbles-1.json";
+  const description = "uskz deviant master edition";
 
   it("Mint!", async () => {
+    // upload metadata
+    const { uri } = await metaplex.nfts().uploadMetadata({
+      name,
+      symbol,
+      description,
+      image: toMetaplexFile(
+        fs.readFileSync(path.join(__dirname, "../assets", `${ID}.jpeg`)),
+        name,
+        {
+          contentType: "image",
+        }
+      ),
+    });
+    console.log(`ASSET: ${name.padEnd(18, " ")} URI: ${uri}`);
+
     // Derive the mint address and the associated token account address
 
     const tokenAddress = anchor.utils.token.associatedAddress({
