@@ -1,6 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
-import BN from "bn.js";
 import { UskzDeviant } from "../target/types/uskz_deviant";
 
 describe("uskz-deviant", () => {
@@ -10,64 +9,66 @@ describe("uskz-deviant", () => {
 
   const program = anchor.workspace.UskzDeviant as Program<UskzDeviant>;
 
-  const TOKEN_METADATA_PROGRAM_ID = new anchor.web3.PublicKey( // metaplex metadata program id
+  const TOKEN_METADATA_PROGRAM_ID = new anchor.web3.PublicKey( // mpl-metadata
     "metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s"
   );
+  const METADATA_SEED = "metadata";
+  const EDITION_SEED = "edition";
+  const MINT_SEED = "mint";
+  const ID = 1;
 
-  const testNftName = "uskz deviant";
-  const testNftSymbol = "USKZ";
-  const testNftUri =
+  const [mint] = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from(MINT_SEED), new anchor.BN(ID).toArrayLike(Buffer, "le", 8)],
+    program.programId
+  );
+
+  const name = "uskz deviant";
+  const symbol = "USKZ";
+  const uri =
     "https://gist.githubusercontent.com/prasmalla/447c6cf49f50bd25616d20b09f9db446/raw/c142d0af6f239bbceedec47ccc7ccb46162b1e1b/marbles-1.json";
 
   it("Mint!", async () => {
     // Derive the mint address and the associated token account address
 
-    const mintKeypair: anchor.web3.Keypair = anchor.web3.Keypair.generate();
     const tokenAddress = anchor.utils.token.associatedAddress({
-      mint: mintKeypair.publicKey,
+      mint,
       owner: wallet.publicKey,
     });
-    console.log(`Token address: ${tokenAddress}`);
-    console.log(`Owner: ${wallet.publicKey}`);
-    console.log(`Public key: ${mintKeypair.publicKey}`);
 
     // Derive the metadata and master edition addresses
 
-    const metadataAddress = anchor.web3.PublicKey.findProgramAddressSync(
+    const [metadataAddress] = anchor.web3.PublicKey.findProgramAddressSync(
       [
-        Buffer.from("metadata"),
+        Buffer.from(METADATA_SEED),
         TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-        mintKeypair.publicKey.toBuffer(),
+        mint.toBuffer(),
       ],
       TOKEN_METADATA_PROGRAM_ID
-    )[0];
+    );
     console.log(`Metadata address: ${metadataAddress}`);
 
-    const masterEditionAddress = anchor.web3.PublicKey.findProgramAddressSync(
+    const [masterEditionAddress] = anchor.web3.PublicKey.findProgramAddressSync(
       [
-        Buffer.from("metadata"),
+        Buffer.from(METADATA_SEED),
         TOKEN_METADATA_PROGRAM_ID.toBuffer(),
-        mintKeypair.publicKey.toBuffer(),
-        Buffer.from("edition"),
+        mint.toBuffer(),
+        Buffer.from(EDITION_SEED),
       ],
       TOKEN_METADATA_PROGRAM_ID
-    )[0];
+    );
     console.log(`Master edition address: ${masterEditionAddress}`);
 
     // Transact with the "mint" function in our on-chain program
 
     await program.methods
-      .createSingleNft(new BN(1), testNftName, testNftSymbol, testNftUri)
+      .createSingleNft(new anchor.BN(ID), name, symbol, uri)
       .accounts({
-        authority: mintKeypair.publicKey,
-        payer: wallet.publicKey,
-        mint: mintKeypair.publicKey,
+        mint,
         tokenAccount: tokenAddress,
         metadataProgram: TOKEN_METADATA_PROGRAM_ID,
         masterEditionAccount: masterEditionAddress,
         nftMetadata: metadataAddress,
       })
-      .signers([mintKeypair])
       .rpc();
   });
 });
