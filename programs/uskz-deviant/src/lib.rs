@@ -5,7 +5,7 @@ use anchor_spl::metadata::{
     CreateMetadataAccountsV3, Metadata,
 };
 use anchor_spl::token::{mint_to, Mint, MintTo, Token, TokenAccount};
-use mpl_token_metadata::types::{Collection, Creator, DataV2};
+use mpl_token_metadata::types::{Collection, DataV2};
 
 declare_id!("EMjfHiSdDdUTxRJMUxnkS9mAVqWaKw8MktGLNKJ94Lnj");
 
@@ -18,6 +18,7 @@ pub mod uskz_deviant {
  name: String,
  symbol: String,
  uri: String,
+ starts_collection: bool,
 ) -> Result<()> {
  msg!("Creating seeds");
         let id_bytes = id.to_le_bytes();
@@ -61,7 +62,14 @@ pub mod uskz_deviant {
                 uri,
                 seller_fee_basis_points: 0,
                 creators: None,
-                collection: None,
+                collection: if starts_collection {
+                    Some(Collection {
+                        key: ctx.accounts.mint.to_account_info().key(), // the mint account itself starts the collection
+                        verified: false,
+                    })
+                } else {
+                    None
+                },
                 uses: None,
             },
             true,
@@ -149,11 +157,7 @@ pub mod uskz_deviant {
                 symbol,
                 uri,
                 seller_fee_basis_points: 0,
-                creators: Some(vec![Creator {
-                    address: ctx.accounts.payer.key(),
-                    verified: true,
-                    share: 100,
-                }]),
+                creators: None,
                 collection: Some(Collection {
                     key: ctx.accounts.collection.key(),
                     verified: false,
